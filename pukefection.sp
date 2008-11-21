@@ -68,33 +68,78 @@ public Plugin:myinfo = {
 }	
 
 public OnPluginStart() {
-	RegConsoleCmd("pukefection_puke", Command_PukefectionPuke);
-	g_cvPukefectionEnabled = CreateConVar("pukefection_enabled", "1", "Turn on Pukefection");
-	g_cvPukefectionCarrierOnly = CreateConVar("pukefection_carrier_only", "0", "Only the carrier zombie may puke");
-	g_cvPukefectionChance = CreateConVar(
-		"pukefection_chance", "0.1", 
-		"Probability a puke hit will infect the survivor",
-		_, true, 0.0, true, 1.0
-	);
-	g_cvPukefectionTurnTimeLow = CreateConVar(
-		"pukefection_turn_time_low", "5", 
-		"If infected by puke, lower bound on seconds until player turns zombie",
-		_, true, 0.0);
-	g_cvPukefectionTurnTimeHigh = CreateConVar("pukefection_turn_time_high", "45", "If infected by puke, upper bound on seconds until player turns zombie");
-	g_cvPukefectionParticle = CreateConVar("pukefection_particle", "blood_advisor_shrapnel_spurt_2", "puke particle effect"); 
-	g_cvPukefectionPukeTime = CreateConVar("pukefection_time", "5.5", "How long each puke lasts"); 
-	g_cvPukefectionPukeDelay = CreateConVar("pukefection_delay", "6.0", "Delay between pukes"); 
-	g_cvPukefectionPukeRate = CreateConVar("pukefection_rate", "0.3", "Interval between infection attacks while puking");
-	g_cvPukefectionPukeRange = CreateConVar("pukefection_range", "85.0", "How far the infect attack reaches"); 
-	g_cvPukefectionDamage = CreateConVar("pukefection_damage", "5.0", "Damage done per hit"); 
-	g_cvPretransformPuke = CreateConVar("pukefection_pretransform_puke", "1", "Throw up before transforming into zombie?");
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("player_death", Event_PlayerKilled);
 	if(!PrecacheSounds())
 		LogMessage("Pukefection couldn't precache all puking sounds");
 
+	RegConsoleCmd("pukefection_puke", Command_PukefectionPuke);
 	RegConsoleCmd("say", onCmdSay);
 	RegConsoleCmd("say_team", onCmdSay);
+	CreateConsoleVars();
+}
+
+CreateConsoleVars() {
+	new flags = FCVAR_NOTIFY;
+	g_cvPukefectionEnabled = CreateConVar(
+		"pukefection_enabled", "1", 
+		"Turn on Pukefection",
+		flags
+	);
+	g_cvPukefectionCarrierOnly = CreateConVar(
+		"pukefection_carrier_only", "0", 
+		"Only the carrier zombie may puke",
+		flags
+	);
+	g_cvPukefectionChance = CreateConVar(
+		"pukefection_chance", "0.1", 
+		"Probability a puke hit will infect the survivor",
+		flags, true, 0.0, true, 1.0
+	);
+	g_cvPukefectionTurnTimeLow = CreateConVar(
+		"pukefection_turn_time_low", "5", 
+		"If infected by puke, lower bound on seconds until player turns zombie",
+		flags, true, 0.0);
+	g_cvPukefectionTurnTimeHigh = CreateConVar(
+		"pukefection_turn_time_high", "45", 
+		"If infected by puke, upper bound on seconds until player turns zombie",
+		flags
+	);
+	g_cvPukefectionParticle = CreateConVar(
+		"pukefection_particle", "blood_advisor_shrapnel_spurt_2", 
+		"puke particle effect",
+		flags
+	); 
+	g_cvPukefectionPukeTime = CreateConVar(
+		"pukefection_time", "5.5", 
+		"How long each puke lasts",
+		flags
+	); 
+	g_cvPukefectionPukeDelay = CreateConVar(
+		"pukefection_delay", "6.0", 
+		"Delay between pukes",
+		flags
+	); 
+	g_cvPukefectionPukeRate = CreateConVar(
+		"pukefection_rate", "0.3", 
+		"Interval between infection attacks while puking",
+		flags
+	);
+	g_cvPukefectionPukeRange = CreateConVar(
+		"pukefection_range", "85.0", 
+		"How far the infect attack reaches",
+		flags
+	); 
+	g_cvPukefectionDamage = CreateConVar(
+		"pukefection_damage", "5.0", 
+		"Damage done per hit",
+		flags
+	); 
+	g_cvPretransformPuke = CreateConVar(
+		"pukefection_pretransform_puke", "1", 
+		"Throw up before transforming into zombie?",
+		flags
+	);
 }
 
 public OnPluginStop() {
