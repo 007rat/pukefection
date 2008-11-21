@@ -434,7 +434,7 @@ public Menu_SelectBind(Handle:menu, MenuAction:action, param1, param2) {
 
 /***** zps *********************/
 
-public bool:IsCarrierZombie(client) {
+bool:IsCarrierZombie(client) {
 	if(!IsClientConnected(client) || !IsClientInGame(client))
 		return false;
 	/*
