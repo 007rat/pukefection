@@ -8,9 +8,17 @@
 #include <sdktools>
 #include <zpsinfectiontoolkit>
 
+#define PLUGIN_VERSION "1.0.1"
+public Plugin:myinfo = {
+	name = "Pukefection",
+	author = "Dr. Rambone Murdoch PhD",
+	description = "Infectious vomit for zps",
+	version = PLUGIN_VERSION,
+	url = "http://rambonemurdoch.blogspot.com/"
+}	
+
 #define TEAM_HUMAN 2
 #define TEAM_ZOMBIE 3
-#define TEAM_CARRIER 4
 #define MAX_PLAYERS 32
 #define MSG_YOU_CAN_PUKE "** Infectious zombie puke attack! Say /puke or bind a key to pukefection_puke **"
 
@@ -59,15 +67,9 @@ new g_PukeParticles[MAX_PLAYERS];
 
 new Handle:g_BindMenu = INVALID_HANDLE;
 
-public Plugin:myinfo = {
-	name = "Pukefection",
-	author = "Dr. Rambone Murdoch PhD",
-	description = "Infectious vomit for zps",
-	version = "1.0.1",
-	url = "http://rambonemurdoch.blogspot.com/"
-}	
 
 public OnPluginStart() {
+	RegisterConVars();
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	HookEvent("player_death", Event_PlayerKilled);
 	if(!PrecacheSounds())
@@ -76,11 +78,15 @@ public OnPluginStart() {
 	RegConsoleCmd("pukefection_puke", Command_PukefectionPuke);
 	RegConsoleCmd("say", onCmdSay);
 	RegConsoleCmd("say_team", onCmdSay);
-	CreateConsoleVars();
 }
 
-CreateConsoleVars() {
-	new flags = FCVAR_NOTIFY;
+RegisterConVars() {
+	new flags = FCVAR_NOTIFY | FCVAR_REPLICATED | FCVAR_PLUGIN;
+	CreateConVar(
+		"pukefection_version", PLUGIN_VERSION, 
+		"Pukefection",
+		flags | FCVAR_SPONLY
+	);
 	g_cvPukefectionEnabled = CreateConVar(
 		"pukefection_enabled", "1", 
 		"Turn on Pukefection",
@@ -273,6 +279,8 @@ public Action:Command_PukefectionPuke(client, args) {
 	return Plugin_Handled;
 }
 
+
+// Derived from code by "L. Duke" at http://forums.alliedmods.net/showthread.php?t=75102
 AttachPukeParticles(ent) {
 	new particle = CreateEntityByName("info_particle_system");
 	decl String:tName[32];
@@ -283,8 +291,8 @@ AttachPukeParticles(ent) {
         	new Float:pos[3];
 		new Float:eyeAngles[3];
 		GetClientEyeAngles(ent, eyeAngles);
-	        GetEntPropVector(ent, Prop_Send, "m_vecOrigin", pos);
-	        TeleportEntity(particle, pos, NULL_VECTOR, NULL_VECTOR);
+		GetEntPropVector(ent, Prop_Send, "m_vecOrigin", pos);
+		TeleportEntity(particle, pos, NULL_VECTOR, NULL_VECTOR);
 		GetConVarString(g_cvPukefectionParticle, particleName, sizeof(particleName));
 		Format(sysName, sizeof(sysName), "pukefection%d", ent);
 		GetEntPropString(ent, Prop_Data, "m_iName", tName, sizeof(tName));
@@ -292,27 +300,27 @@ AttachPukeParticles(ent) {
 			Format(tName, sizeof(tName), "pukeplayerent%d", ent);
 			DispatchKeyValue(ent, "targetname", tName);
 		}
-	      	DispatchKeyValue(particle, "targetname", sysName);
-	        DispatchKeyValue(particle, "parentname", tName);
+		DispatchKeyValue(particle, "targetname", sysName);
+		DispatchKeyValue(particle, "parentname", tName);
 		DispatchKeyValue(particle, "scale", "1000");
-	        DispatchKeyValue(particle, "effect_name", particleName);
+		DispatchKeyValue(particle, "effect_name", particleName);
 		eyeAngles[1] += 90; // rotate for the spurt effect
 		eyeAngles[0] += 90; 
 		eyeAngles[2] += 180;	
 		DispatchKeyValueVector(particle, "angles", eyeAngles);
-			
-	        DispatchSpawn(particle);
-	        SetVariantString(tName);
-	        AcceptEntityInput(particle, "SetParent", particle, particle, 0);
-	        GetEntPropVector(particle, Prop_Send, "m_vecOrigin", pos);
+	
+		DispatchSpawn(particle);
+		SetVariantString(tName);
+		AcceptEntityInput(particle, "SetParent", particle, particle, 0);
+		GetEntPropVector(particle, Prop_Send, "m_vecOrigin", pos);
 		pos[2] -= 6.5; // move the particle emitter to the mouth, subjective
-	        SetEntPropVector(particle, Prop_Send, "m_vecOrigin", pos);
+		SetEntPropVector(particle, Prop_Send, "m_vecOrigin", pos);
 		SetVariantString("anim_attachment_head");
 		AcceptEntityInput(particle, "SetParentAttachmentMaintainOffset", particle, particle, 0);
-	        ActivateEntity(particle);
+		ActivateEntity(particle);
 		g_PukeParticles[ent] = particle;
 	} else {
-		 LogError("AttachPukeParticles: could not create info_particle_system");
+		LogError("AttachPukeParticles: could not create info_particle_system");
 	}
 }
 
@@ -345,7 +353,8 @@ bool:CanPuke(client) {
 	if(team != TEAM_ZOMBIE && !(
 		team == TEAM_HUMAN && 
 		GetConVarBool(g_cvPretransformPuke)
-		)) 
+		)
+	) 
 		return false;
 
 	return true;
@@ -482,10 +491,7 @@ public Menu_SelectBind(Handle:menu, MenuAction:action, param1, param2) {
 bool:IsCarrierZombie(client) {
 	if(!IsClientConnected(client) || !IsClientInGame(client))
 		return false;
-	/*
 	decl String:weaponName[32];
 	GetClientWeapon(client, weaponName, sizeof(weaponName));
 	return 0 == strcmp(weaponName, "weapon_carrierarms");
-	*/
-	return GetClientTeam(client) == TEAM_CARRIER;
 }
