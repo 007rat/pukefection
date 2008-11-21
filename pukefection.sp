@@ -6,10 +6,11 @@
 
 #include <sourcemod>
 #include <sdktools>
-#include <zpsinfect>
+#include <zpsinfectiontoolkit>
 
 #define TEAM_HUMAN 2
 #define TEAM_ZOMBIE 3
+#define TEAM_CARRIER 4
 #define MAX_PLAYERS 32
 #define MSG_YOU_CAN_PUKE "** Infectious zombie puke attack! Say /puke or bind a key to pukefection_puke **"
 
@@ -91,7 +92,6 @@ public OnPluginStart() {
 	HookEvent("player_death", Event_PlayerKilled);
 	if(!PrecacheSounds())
 		LogMessage("Pukefection couldn't precache all puking sounds");
-	PrepZpsCalls();
 
 	RegConsoleCmd("say", onCmdSay);
 	RegConsoleCmd("say_team", onCmdSay);
@@ -354,19 +354,18 @@ public PukefectionAttack(attacker) {
 	GivePukeDamagePlayer(victim);
 	// TODO:draw a splatter on their screen
 	// quit if they're already infected
-	if(PlayerIsInfected(victim))
+	if(ZIT_PlayerIsInfected(victim))
 		return;
 	// quit if they randomly escape infection 
 	if(GetRandomFloat() > GetConVarFloat(g_cvPukefectionChance))
 		return;
-	//PanicPlayer(victim); //oh noes
 	EmitWaterSoundRandom(victim); // glub glub 	
 	// infect target
 	new Float:turnTime = GetRandomFloat(
 		GetConVarFloat(g_cvPukefectionTurnTimeLow),
 		GetConVarFloat(g_cvPukefectionTurnTimeHigh)
 	);
-	InfectPlayerInXSeconds(victim, turnTime);
+	ZIT_InfectPlayerInXSeconds(victim, turnTime);
 	// Possibly give the infected a chance to escape zombies so they might
 	// join up with a group of survivors
 	SetEntDataFloat(
@@ -387,9 +386,9 @@ public Action:Timer_PretransformPukeCheck(Handle:timer) {
 			continue;
 		if(IsPuking(i))
 			continue;
-		if(!PlayerIsInfected(i)) 
+		if(!ZIT_PlayerIsInfected(i)) 
 			continue;
-		if(GetPlayerTurnTime(i) - curTime <= GetConVarFloat(g_cvPukefectionPukeTime)) {
+		if(ZIT_GetPlayerTurnTime(i) - curTime <= GetConVarFloat(g_cvPukefectionPukeTime)) {
 			StartPlayerPuking(i);
 		}
 	}
@@ -403,7 +402,7 @@ public Action:onCmdSay(client, args) {
 	decl String:text[192];
 	GetCmdArg(1, text, sizeof(text));
 	TrimString(text);
-	if(!StrEqual(text, "/puke")) {
+	if(!StrEqual(text, "/puke", false)) {
 		return Plugin_Continue;
 	}
 	// they want pukefection info
@@ -435,23 +434,13 @@ public Menu_SelectBind(Handle:menu, MenuAction:action, param1, param2) {
 
 /***** zps *********************/
 
-#define ZPS_PANIC_INDEX 442
-#define ZPS_COUGH_INDEX 447
-new Handle:g_sdkZpsPanic = INVALID_HANDLE;
-public PrepZpsCalls() {
-	StartPrepSDKCall(SDKCall_Player);
-	PrepSDKCall_SetVirtual(ZPS_PANIC_INDEX);
-	g_sdkZpsPanic = EndPrepSDKCall();
-}
-
-public PanicPlayer(client) {
-	SDKCall(g_sdkZpsPanic, client);
-}
-
 public bool:IsCarrierZombie(client) {
 	if(!IsClientConnected(client) || !IsClientInGame(client))
 		return false;
+	/*
 	decl String:weaponName[32];
 	GetClientWeapon(client, weaponName, sizeof(weaponName));
 	return 0 == strcmp(weaponName, "weapon_carrierarms");
+	*/
+	return GetClientTeam(client) == TEAM_CARRIER;
 }
