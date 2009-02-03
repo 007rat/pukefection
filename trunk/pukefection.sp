@@ -8,7 +8,7 @@
 #include <sdktools>
 #include <zpsinfectiontoolkit>
 
-#define PLUGIN_VERSION "1.0.1"
+#define PLUGIN_VERSION "1.0.2"
 public Plugin:myinfo = {
 	name = "Pukefection",
 	author = "Dr. Rambone Murdoch PhD",
@@ -24,25 +24,25 @@ public Plugin:myinfo = {
 
 #define PUKE_SOUND_COUNT 6
 new String:g_PukeSounds[PUKE_SOUND_COUNT][128] = {
-		 "Zombies/Z_Carrier_Speech/Pain/Zcarrier_Pain-04.wav",
-		 "Zombies/Z_Carrier_Speech/Pain/Zcarrier_Pain-06.wav",
-		 "Zombies/Z_Cop/Pain/Pain-01.wav",
-		 "Zombies/Z_Cop/Pain/Pain-05.wav",
-		 "Zombies/Z_Male1Speech/Pain/ZMale_Pain2.wav",
-		 "Zombies/Z_Male1Speech/Pain/ZMale_Pain6.wav"
+		 "zombies/z_carrier_speech/pain/zcarrier_pain-04.wav",
+		 "zombies/z_carrier_speech/pain/zcarrier_pain-06.wav",
+		 "zombies/z_cop/pain/pain-01.wav",
+		 "zombies/z_cop/pain/pain-05.wav",
+		 "zombies/z_male1speech/pain/zmale_pain2.wav",
+		 "zombies/z_male1speech/pain/zmale_pain6.wav"
 		};
 
 
 // AirRough-03 had some weird distortion or something
 #define WATER_SOUND_COUNT 7
 new String:g_WaterSounds[WATER_SOUND_COUNT][128] = {
-		"Humans/HM_Water/HM_AirRough-01.wav",
-		"Humans/HM_Water/HM_AirRough-02.wav",
-		"Humans/HM_Water/HM_AirRough-04.wav",
-		"Humans/HM_Water/HM_Air-01.wav",
-		"Humans/HM_Water/HM_Air-02.wav",
-		"Humans/HM_Water/HM_Air-03.wav",
-		"Humans/HM_Water/HM_Air-04.wav"
+		"humans/hm_water/hm_airrough-01.wav",
+		"humans/hm_water/hm_airrough-02.wav",
+		"humans/hm_water/hm_airrough-04.wav",
+		"humans/hm_water/hm_air-01.wav",
+		"humans/hm_water/hm_air-02.wav",
+		"humans/hm_water/hm_air-03.wav",
+		"humans/hm_water/hm_air-04.wav"
 		};
 		
 // cvars
